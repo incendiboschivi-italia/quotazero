@@ -1,0 +1,18 @@
+{
+  "name": "QuotaZero - Trekking & Montagna",
+  "short_name": "QuotaZero",
+  "description": "Pianificatore di itinerari escursionistici, tracce GPX e bivacchi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2910/2910311.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
