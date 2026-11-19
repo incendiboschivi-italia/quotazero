@@ -1,0 +1,365 @@
+<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>QuotaZero</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f172a;--cd:#1e293b;--tx:#f8fafc;--mu:#94a3b8;--bd:#334155;--hd:#0f172a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{background:#0f172a;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:#0f172a;color:var(--tx);font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--hd);z-index:30}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:14px}
+.mu{color:var(--mu)}.bd{border:1px solid var(--bd)}
+textarea{resize:none;line-height:1.4}input,select,textarea{background:#0f172a;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;width:100%;font-size:14px}input:focus,textarea:focus{outline:2px solid #10b981;outline-offset:1px}input[type=checkbox]{accent-color:#10b981}
+.ch{border:1px solid var(--bd);background:#1e293b;color:#cbd5e1;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;transition:.15s}
+.on,.pon{background:#10b981!important;color:#0f172a!important;border-color:#10b981!important}
+.pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--bd);background:#334155;color:#f1f5f9;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;transition:.15s}.pill:hover:not(:disabled){background:#475569}.pill:disabled{opacity:.5}
+</style></head><body>
+<div id="root"></div>
+<script>
+const {useState,useEffect}=React;const h=htm.bind(React.createElement);
+const Ic=({n,s=18,c=''})=>{let ic=(window.lucide&&lucide.icons&&lucide.icons[n])||[];if(ic[0]==='svg')ic=ic[2]||[];return React.createElement('svg',{width:s,height:s,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',className:c},...ic.map(([t,a],i)=>React.createElement(t,{...a,key:i})))};
+const DC=['#10b981','#38bdf8','#facc15','#f472b6','#a3e635'];
+const TC={s:'#e2e8f0',r:'#ef4444',b:'#a855f7',t:'#22c55e',w:'#38bdf8',p:'#fbbf24',e:'#f97316'};
+const SL={r:'Rifugio custodito',b:'Bivacco fisso non gestito',t:'Tenda / bivacco libero',w:'Punto acqua',p:'Passo / vetta',e:'Punto emergenza / segnale'};
+const CAI={T:'Turistico',E:'Escursionistico',EE:'Escursionisti esperti',EEA:'Esperti con attrezzatura'};
+const P=(lat,lon,ele,n,t)=>({lat,lon,ele,n,t});
+const PRE=[
+{name:'Anello Lago Santo e Marmagna',zone:'Appennino Tosco-Emiliano · 2 giorni',days:[
+{km:11.4,dp:980,dm:720,cai:'E',sleep:'b',sn:'Capanna Schiaffino',water:['Lago Santo (da potabilizzare)','Fontana di Lagdei'],esc:['Dal Lago Santo ridiscesa a Lagdei per il sentiero di salita, circa 1 h 30.','Dopo il Marmagna, in caso di nebbia rientro al Lago Santo (45 min).'],pts:[P(44.415,10.02,1250,'Lagdei','s'),P(44.40194,10.00694,1507,'Lago Santo','w'),P(44.399,10.001,1700),P(44.39717,9.99602,1852,'Monte Marmagna','p'),P(44.401,9.995,1720),P(44.4047,9.9949,1610,'Capanna Schiaffino','b')]},
+{km:13.2,dp:720,dm:980,cai:'E',sleep:null,sn:'',water:['Sorgente sotto il Monte Orsaro'],esc:['Dal Monte Orsaro discesa diretta in Val Parma (circa 2 h).','Ultimo tratto su carrareccia: rientro rapido a Lagdei.'],pts:[P(44.4047,9.9949,1610,'Capanna Schiaffino','b'),P(44.4072,9.9898,1724,'Bocchetta dell’Orsaro','p'),P(44.41027,9.99166,1831,'Monte Orsaro','p'),P(44.411,9.998,1620),P(44.4128,10.005,1450,'Sorgente','w'),P(44.414,10.012,1330),P(44.415,10.02,1250,'Lagdei','s')]}]},
+{name:'Alta Via 1 – Dolomiti',zone:'Dolomiti · 3 giorni',days:[
+{km:16,dp:1010,dm:540,cai:'E',sleep:'r',sn:'Rifugio Fodara Vedla',water:['Rifugio Biella','Rifugio Sennes'],esc:['Da Sennes sentiero a valle verso San Vigilio di Marebbe (circa 2 h 30).','Da Biella ridiscesa verso il Lago di Braies (2 h 30).'],pts:[P(46.6945,12.0855,1496,'Lago di Braies','s'),P(46.675,12.081,1900),P(46.657,12.077,2327,'Rifugio Biella','r'),P(46.635,12.09,2116,'Rifugio Sennes','r'),P(46.614,12.087,1966,'Rifugio Fodara Vedla','r')]},
+{km:21,dp:1150,dm:364,cai:'EE',sleep:'r',sn:'Rifugio Lagazuoi',water:['Rifugio Fanes','Rifugio Lagazuoi'],esc:['Da Fanes discesa in Val di Fanes verso Pederü (circa 3 h).','Dalla Forcella del Lago nessuna via breve: valutare il meteo prima di salire.'],pts:[P(46.614,12.087,1966,'Rifugio Fodara Vedla','r'),P(46.598,12.04,2060,'Rifugio Fanes','r'),P(46.57,12.039,2486,'Forcella del Lago','p'),P(46.54,12.02,2300),P(46.5176,12.0071,2752,'Rifugio Lagazuoi','r')]},
+{km:12.5,dp:640,dm:1156,cai:'EEA',sleep:null,sn:'',water:['Rifugio Averau','Rifugio Nuvolau'],esc:['Dal Lagazuoi funivia (stagionale) o discesa a Passo Falzarego in 1 h 30.','Da Averau sentiero diretto verso Passo Giau.'],pts:[P(46.5176,12.0071,2752,'Rifugio Lagazuoi','r'),P(46.5155,12.017,2105,'Passo Falzarego','p'),P(46.5,12.036,2413,'Rifugio Averau','r'),P(46.498,12.042,2575,'Rifugio Nuvolau','r'),P(46.485,12.045,2236,'Passo Giau','s')]}]}];
+
+const hav=(a,b)=>{const r=Math.PI/180,x=(b.lat-a.lat)*r,y=(b.lon-a.lon)*r,q=Math.sin(x/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(y/2)**2;return 12742*Math.asin(Math.sqrt(q))};
+const MODE={method:'cai',speed:4};
+const calc=(d,m=MODE)=>{if(m.method==='munter'){const ek=d.km+d.dp/100,t=ek/m.speed;return{t,lo:t,hi:t,ek}}
+const hv=d.cai==='EE'||d.cai==='EEA'?[3,2.5]:[3.5,3.5],f=(vh,up,dn)=>{const a=d.km/vh,v=d.dp/up+d.dm/dn;return Math.max(a,v)+Math.min(a,v)/2};
+return{t:f((hv[0]+hv[1])/2,325,450),lo:f(hv[0],350,500),hi:f(hv[1],300,400)}};
+const tm=d=>calc(d).t;
+const pace=(d,t)=>t>0?{kmh:d.km/t,mk:t*60/Math.max(d.km,.1)}:{kmh:0,mk:0};
+
+const ls={
+  get:()=>{try{return JSON.parse(localStorage.getItem('qz_sb'))||{}}catch(e){return{}}},
+  set:v=>{try{localStorage.setItem('qz_sb',JSON.stringify(v))}catch(e){}},
+  getIts:()=>{try{const x=JSON.parse(localStorage.getItem('qz_its_v1'));return Array.isArray(x)&&x.length?x:null}catch(e){return null}},
+  setIts:v=>{try{localStorage.setItem('qz_its_v1',JSON.stringify(v))}catch(e){}}
+};
+const err=e=>e.code==='PGRST205'||e.code==='42P01'?'Tabelle non trovate: esegui prima lo script SQL su Supabase.':/fetch|network/i.test(e.message||'')?'Connessione non riuscita: rete assente o dominio bloccato in questa pagina.':(e.message||'Errore sconosciuto');
+
+const TL={topo:{u:(z,x,y)=>'https://'+'abc'[(x+y)%3]+'.tile.opentopomap.org/'+z+'/'+x+'/'+y+'.png',a:'© OpenStreetMap contributors, SRTM | © OpenTopoMap (CC-BY-SA)',mz:17},osm:{u:(z,x,y)=>'https://tile.openstreetmap.org/'+z+'/'+x+'/'+y+'.png',a:'© OpenStreetMap contributors',mz:19}};
+const mp=(lat,lon,z)=>{const S=256*2**z,s=Math.sin(lat*Math.PI/180);return[(lon+180)/360*S,(.5-Math.log((1+s)/(1-s))/(4*Math.PI))*S]};
+const unp=(x,y,z)=>{const S=256*2**z,n=Math.PI-2*Math.PI*y/S;return[180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n))),x/S*360-180]};
+
+const TileMap=({it,kind,sel,wp,setWp,onPick,pick,fk,onFail})=>{
+const ref=React.useRef(null),mv=React.useRef(false),okR=React.useRef(0),[sz,setSz]=useState({w:340,hh:300}),[v,setV]=useState(null),[ok,setOk]=useState(0),[bad,setBad]=useState(0),cfg=TL[kind],all=it.days.flatMap(d=>d.pts);okR.current=ok;
+const fit=(w,hh)=>{if(!all.length)return{z:5,cx:0,cy:0};const la=all.map(p=>p.lat),lo=all.map(p=>p.lon),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo);let z=cfg.mz-1;for(;z>3;z--){const A=mp(a1,o0,z),B=mp(a0,o1,z);if(B[0]-A[0]<w-80&&B[1]-A[1]<hh-80)break}const A=mp(a1,o0,z),B=mp(a0,o1,z);return{z,cx:(A[0]+B[0])/2,cy:(A[1]+B[1])/2}};
+useEffect(()=>{const e=ref.current,f=()=>e&&setSz({w:e.clientWidth||340,hh:e.clientHeight||300});f();const ro=window.ResizeObserver&&new ResizeObserver(f);if(ro&&e)ro.observe(e);return()=>ro&&ro.disconnect()},[]);
+useEffect(()=>{setV(fit(sz.w,sz.hh))},[fk,sz.w,sz.hh]);
+useEffect(()=>{if(bad>=3&&ok===0)onFail()},[bad,ok]);
+useEffect(()=>{const t=setTimeout(()=>{if(!okR.current)onFail()},8000);return()=>clearTimeout(t)},[]);
+const w=sz.w,hh=sz.hh;
+const zm=d=>setV(a=>{if(!a)return a;const z2=Math.min(cfg.mz,Math.max(3,a.z+d));if(z2===a.z)return a;const f=2**(z2-a.z);return{z:z2,cx:a.cx*f,cy:a.cy*f}});
+const onWheel=e=>{e.preventDefault();zm(e.deltaY<0?1:-1)};
+const dn=e=>{if(!v)return;const s0={x:e.clientX,y:e.clientY,cx:v.cx,cy:v.cy,z:v.z},r=ref.current.getBoundingClientRect();mv.current=false;
+const mf=ev=>{const dx=ev.clientX-s0.x,dy=ev.clientY-s0.y;if(Math.abs(dx)+Math.abs(dy)>4)mv.current=true;if(mv.current)setV(a=>({...a,cx:s0.cx-dx,cy:s0.cy-dy}))};
+const uf=ev=>{window.removeEventListener('pointermove',mf);window.removeEventListener('pointerup',uf);window.removeEventListener('pointercancel',uf);if(!mv.current&&onPick&&ev.type==='pointerup'){const q=unp(s0.cx-w/2+ev.clientX-r.left,s0.cy-hh/2+ev.clientY-r.top,s0.z);onPick(q[0],q[1])}};
+window.addEventListener('pointermove',mf);window.addEventListener('pointerup',uf);window.addEventListener('pointercancel',uf)};
+let body=null;if(v){const{z,cx,cy}=v,n=2**z,ox=cx-w/2,oy=cy-hh/2,T=[];for(let x=Math.floor(ox/256);x<=Math.floor((cx+w/2)/256);x++)for(let y=Math.max(0,Math.floor(oy/256));y<=Math.min(n-1,Math.floor((cy+hh/2)/256));y++)T.push([x,y]);
+const P=p=>{const q=mp(p.lat,p.lon,z);return[q[0]-ox,q[1]-oy]};
+body=h`<div className="absolute inset-0">${T.map(([x,y])=>h`<img key=${z+'/'+x+'/'+y} alt="" draggable=${false} src=${cfg.u(z,((x%n)+n)%n,y)} onLoad=${()=>setOk(a=>a+1)} onError=${()=>setBad(a=>a+1)} style=${{position:'absolute',left:x*256-ox,top:y*256-oy,width:256,height:256,maxWidth:'none'}}/>`)}
+<svg width=${w} height=${hh} style=${{position:'absolute',inset:0,pointerEvents:'none'}}>${it.days.map((d,i)=>{const q=d.pts.map(P);return h`<g key=${i} opacity=${sel<0||sel===i?1:.25}><path d=${crv(q)} fill="none" stroke="#0f172a" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity=".65"/><path d=${crv(q)} fill="none" stroke=${DC[i%5]} strokeWidth="3.5" strokeLinecap="round" strokeDasharray="9 5"/></g>`})}
+${it.days.map((d,i)=>(sel<0||sel===i)&&d.pts.map((p,j)=>{if(!p.n)return null;const[x,y]=P(p);if(x<-30||y<-30||x>w+30||y>hh+30)return null;const bw=p.n.length*5.4+12,fl=x+14+bw>w-4,on=wp&&wp.d===i&&wp.j===j,ry=Math.min(hh-18,Math.max(2,y-8));return h`<g key=${i+'-'+j} style=${{pointerEvents:'auto',cursor:'pointer'}} onClick=${()=>{if(!mv.current)setWp({d:i,j})}}><rect x=${fl?x-14-bw:x+14} y=${ry} width=${bw} height="17" rx="5" fill="#0f172a" stroke="#334155" strokeWidth="1" opacity=".94"/><text x=${fl?x-14-bw/2:x+14+bw/2} y=${ry+12} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#f8fafc">${p.n}</text><circle cx=${x} cy=${y} r=${'rbte'.includes(p.t)?10:7} fill=${TC[p.t]||'#94a3b8'} stroke=${on?'#fff':'#0f172a'} strokeWidth=${on?3:2}/>${'rbte'.includes(p.t)&&h`<text x=${x} y=${y+3.5} textAnchor="middle" fontSize="10" fontWeight="800" fill="#fff">${p.t.toUpperCase()}</text>`}</g>`}))}</svg>
+<div className="absolute right-2 bottom-8 flex flex-col gap-1.5" onPointerDown=${e=>e.stopPropagation()}>${[['Plus','Zoom avanti',()=>zm(1)],['Minus','Zoom indietro',()=>zm(-1)],['Maximize','Inquadra il percorso',()=>setV(fit(w,hh))]].map(([n,l,f])=>h`<button key=${n} aria-label=${l} title=${l} onClick=${f} className="w-9 h-9 grid place-items-center rounded-xl bg-slate-900/90 border border-slate-700 text-slate-100 hover:bg-slate-800"><${Ic} n=${n} s=${16}/></button>`)}</div>
+<div className="absolute bottom-0 right-0 max-w-[85%] text-[9px] leading-tight bg-slate-900/90 text-slate-300 px-1.5 py-0.5 rounded-tl pointer-events-none">${cfg.a}</div></div>`}
+return h`<div ref=${ref} onWheel=${onWheel} className="relative w-full overflow-hidden select-none aspect-[340/300] lg:aspect-auto lg:h-full" style=${{background:'#1e293b',touchAction:'none',cursor:pick?'crosshair':'grab'}} onPointerDown=${dn}>${body}</div>`};
+
+const MS={kind:'topo',fail:false};
+const MapBox=({it,sel,wp,setWp,fk,pick,onPick})=>{const[kind,setK]=useState(MS.kind),[fail,setF]=useState(MS.fail);
+const pk=k=>{MS.kind=k;setK(k);if(k!=='vec'){MS.fail=false;setF(false)}},onFail=()=>{MS.kind='vec';MS.fail=true;setK('vec');setF(true)};
+return h`<div className="relative lg:h-[clamp(360px,48vh,520px)]">${kind==='vec'?h`<${MapV} it=${it} sel=${sel} wp=${wp} setWp=${setWp} onPick=${onPick}/>`:h`<${TileMap} key=${kind} it=${it} kind=${kind} sel=${sel} wp=${wp} setWp=${setWp} onPick=${onPick} pick=${pick} fk=${fk} onFail=${onFail}/>`}
+<div className="absolute top-2 left-2 z-10 flex rounded-xl overflow-hidden border border-slate-700 bg-slate-900/90 backdrop-blur text-[10.5px] font-semibold shadow-lg">${[['topo','OpenTopoMap'],['osm','OpenStreetMap'],['vec','Vettoriale offline']].map(([k,l])=>h`<button key=${k} className=${'px-2.5 py-1.5 transition '+(kind===k?'bg-emerald-500 text-slate-950 font-bold':'text-slate-300 hover:text-white')} onClick=${()=>pk(k)}>${l}</button>`)}</div>
+${fail&&kind==='vec'&&h`<div role="status" className="absolute bottom-2 left-2 z-10 max-w-[80%] rounded-lg bg-slate-900/90 border border-slate-700 text-[10.5px] text-slate-300 px-2 py-1">Tile non raggiungibili: vista vettoriale offline attiva.</div>`}</div>`};
+
+const Pos=({p,set,on,pin,cls=''})=>h`<div className=${'flex items-center gap-1.5 '+cls}>${['lat','lon'].map(k=>h`<input key=${k+p[k]} type="number" step="any" aria-label=${k==='lat'?'Latitudine':'Longitudine'} placeholder=${k==='lat'?'Lat':'Lon'} defaultValue=${p[k]} onBlur=${e=>{const x=parseFloat(e.target.value);if(isFinite(x)&&x!==p[k])set(k==='lat'?x:p.lat,k==='lon'?x:p.lon)}}/>`)}<button aria-label="Posiziona sulla mappa" title="Posiziona toccando la mappa" className=${'grid place-items-center w-9 h-9 shrink-0 rounded-xl border '+(on?'bg-emerald-500 text-slate-950 border-emerald-500':'border-slate-700 bg-slate-900 text-slate-300')} onClick=${pin}><${Ic} n="MapPin" s=${15}/></button></div>`;
+
+const GZ=[
+{k:['abetone','libro aperto','cimone','scaffaiolo','lago nero','modena','pistoia'],z:'Appennino Tosco-Emiliano',c:[44.1457,10.6628],e:1388,st:'Abetone',pk:['Libro Aperto','Monte Cimone','Monte Gomito'],rf:['Rifugio Duca degli Abruzzi','Rifugio Marchetti'],wt:['Lago Scaffaiolo','Lago Nero','Lago Piatto']},
+{k:['lago santo','marmagna','orsaro','lagdei','parma','corniglio','cento laghi'],z:'Appennino Parmense',c:[44.415,10.02],e:1250,st:'Lagdei',pk:['Monte Marmagna','Monte Orsaro','Monte Braiola'],rf:['Rifugio Mariotti','Capanna Schiaffino'],wt:['Lago Santo','Lago Scuro']},
+{k:['apuane','pania','pisanino','garfagnana','carrara','corchia'],z:'Alpi Apuane',c:[44.0975,10.2478],e:1100,st:'Foce di Mosceta',pk:['Pania della Croce','Monte Corchia','Monte Pisanino'],rf:['Rifugio Rossi','Rifugio Donegani'],wt:['Sorgente del Puntato','Fontana di Mosceta']},
+{k:['dolomit','cortina','tofane','cinque torri','lagazuoi','nuvolau','averau','falzarego','alta via'],z:'Dolomiti',c:[46.5167,12.0097],e:2105,st:'Passo Falzarego',pk:['Lagazuoi','Nuvolau','Averau'],rf:['Rifugio Lagazuoi','Rifugio Averau','Rifugio Scoiattoli'],wt:['Lago Limides','Fonte Cinque Torri']},
+{k:['gran sasso','corno grande','campo imperatore','abruzzo','cefalone'],z:'Gran Sasso',c:[42.444,13.559],e:2130,st:'Campo Imperatore',pk:['Corno Grande','Pizzo Cefalone','Monte Aquila'],rf:['Rifugio Duca degli Abruzzi','Rifugio Garibaldi'],wt:['Fonte Vetica','Lago Racollo']}];
+
+const PROMPT=(q,f)=>'Sei un esperto pianificatore di escursioni e trekking in montagna in Italia. Richiesta: "'+q+'"'+(f.diff?'
+Difficoltà richiesta: '+f.diff+'.':'')+(f.dur?'
+Durata richiesta: '+f.dur+(f.dur>1?' giorni.':' giorno.'):'')+'
+Rispondi SOLO con un oggetto JSON (niente testo, niente markdown) di questa forma: {"name":string,"zone":string,"desc":string (3-5 frasi in italiano),"days":[{"km":number,"dp":number,"dm":number,"cai":"T"|"E"|"EE"|"EEA","sleep":null|"r"|"b"|"t","sn":string,"water":[string],"esc":[string],"pts":[{"lat":number,"lon":number,"ele":number,"n":string (solo punti notevoli),"t":"p"|"r"|"b"|"w"}]}]}. Regole: usa luoghi, sentieri e strutture reali della zona richiesta, con coordinate GPS in gradi decimali e quote il più fedeli possibile; da 6 a 10 punti per tappa in ordine lungo il percorso, con i punti notevoli nominati (p=vetta o passo, r=rifugio, b=bivacco, w=acqua) e punti intermedi senza nome per la forma del tracciato; il primo punto di ogni giorno coincide con l’ultimo del giorno prima; sleep è il pernottamento a fine tappa (r=rifugio custodito, b=bivacco fisso non gestito, t=tenda) e null nell’ultima tappa; se la richiesta cita un bivacco usa b; km, dp (D+ in metri) e dm (D- in metri) devono essere realistici e coerenti con le quote dei punti; non inventare strutture inesistenti.';
+
+const fixAI=j=>{try{if(!j||!Array.isArray(j.days)||j.days.length<1||j.days.length>5)return null;const num=(v,d)=>Number.isFinite(+v)?+v:d,days=[];let prev=null;
+for(let i=0;i<j.days.length;i++){const d=j.days[i]||{};const pts=(d.pts||[]).map(p=>({lat:+p.lat,lon:+p.lon,ele:Math.round(num(p.ele,0)),n:p.n?String(p.n).slice(0,40):undefined,t:['p','r','b','w','e'].includes(p.t)?p.t:'p'})).filter(p=>isFinite(p.lat)&&isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180);if(pts.length<2)return null;if(prev)pts[0]={...prev};
+const L=pts.length-1;let km=0,as=0,dd=0;for(let k=1;k<=L;k++){km+=hav(pts[k-1],pts[k]);const e=pts[k].ele-pts[k-1].ele;if(e>0)as+=e;else dd-=e}
+days.push({km:Math.round(Math.max(num(d.km,0),km*1.15)*10)/10,dp:Math.round(Math.max(num(d.dp,0),as)),dm:Math.round(Math.max(num(d.dm,0),dd)),cai:CAI[d.cai]?d.cai:'E',sleep:i===j.days.length-1?null:(['r','b','t'].includes(d.sleep)?d.sleep:'r'),sn:String(d.sn||''),water:(d.water||[]).map(String).slice(0,6),esc:(d.esc&&d.esc.length?d.esc:['Definisci la via di fuga per questa tappa.']).map(String).slice(0,4),pts});prev=pts[L]}
+if(days.reduce((a,d)=>a+d.km,0)>150)return null;return norm({name:String(j.name||'Itinerario IA'),zone:String(j.zone||''),desc:String(j.desc||''),days})}catch(e){return null}};
+
+const mockRoute=(q,f)=>{const s=q.toLowerCase(),F=GZ.find(a=>a.k.some(k=>s.includes(k))),A=F||GZ[0],m=s.match(/(\d)\s*giorn/),n=Math.min(3,Math.max(1,f.dur||(m?+m[1]:/weekend|bivacc|notte|pernott|tenda/.test(s)?2:1))),df=f.diff||(/facile|famigli|bambini/.test(s)?'Facile':/difficile|impegnativ|ferrata|esperti/.test(s)?'Difficile':'Medio'),B={Facile:[9,550,'T'],Medio:[12.5,900,'E'],Difficile:[15.5,1250,'EE']}[df],cai=/ferrata|attrezzat/.test(s)&&df!=='Facile'?'EEA':B[2],sl=/tenda/.test(s)?'t':/bivacc/.test(s)?'b':'r';
+const hit=x=>s.includes(x.toLowerCase()),srt=a=>[...a.filter(hit),...a.filter(x=>!hit(x))],pk=srt(A.pk),rf=srt(A.rf),wt=srt(A.wt);
+const rl=B[0]*n/(2*Math.PI*.9)/1.25/111,rx=rl/Math.cos(A.c[0]*Math.PI/180),th=(s.length%12)*Math.PI/6,cx=A.c[1]+rx*Math.cos(th),cy=A.c[0]+.85*rl*Math.sin(th);
+const at=u=>{const g=th+Math.PI+2*Math.PI*u,w=1+.08*Math.sin(6*Math.PI*u);return[+(cy+.85*rl*w*Math.sin(g)).toFixed(5),+(cx+rx*w*Math.cos(g)).toFixed(5)]};
+const dps=[...Array(n)].map((_,i)=>Math.round(B[1]*(i%2?.9:1.05)/10)*10),tdp=dps.reduce((a,b)=>a+b,0);let es=A.e,sd=0,pn=A.st;
+const days=dps.map((dp,i)=>{const last=i===n-1,dm=last?tdp-sd:Math.round(dp*.7/10)*10;sd+=dm;const ee=last?A.e:es+dp-dm,top=es+Math.round(dp*.8),el=[es,es+.3*dp,es+.65*dp,top,top-(top-ee)*.45,top-(top-ee)*.8,ee].map(Math.round),
+en=last?A.st:(sl==='r'?rf[i%rf.length]:(sl==='b'?'Bivacco ':'Tenda presso ')+wt[(i+1)%wt.length]),nm=[pn,wt[(2*i)%wt.length],null,pk[i%pk.length],null,wt[(2*i+1)%wt.length],en],tp=['s','w',0,'p',0,'w','s'];
+const pts=[0,.18,.38,.55,.72,.88,1].map((t,k)=>{const[la,lo]=at((i+t)/n);return{lat:la,lon:lo,ele:el[k],...(nm[k]?{n:nm[k],t:tp[k]}:{})}});pn=en;es=ee;
+return{km:Math.round(B[0]*(i%2?.92:1.04)*10)/10,dp,dm,cai,sleep:last?null:sl,sn:last?'':en,water:[nm[1],nm[5]],esc:['Dal '+pk[i%pk.length]+' ridiscesa verso '+A.st+' per il sentiero di salita (stima 1 h 30).','In caso di maltempo rinuncia alle creste e scendi al punto più vicino. Emergenze: 112.'],pts}});
+const km=days.reduce((a,d)=>a+d.km,0),mx=Math.max(...days.flatMap(d=>d.pts.map(p=>p.ele))),sn=sl==='r'?'rifugio':sl==='b'?'bivacco':'tenda';
+return{miss:!F,name:n>1?'Anello di '+n+' giorni: '+A.st+' e '+pk[0]:'Anello del '+pk[0]+' da '+A.st,zone:A.z,desc:'Itinerario ad anello di '+n+(n>1?' giorni':' giorno')+' con partenza da '+A.st+' ('+A.z+'), di livello '+df.toLowerCase()+' (difficoltà CAI '+cai+'). '+(n>1?'Il primo giorno sale verso '+pk[0]+' e si pernotta in '+sn+' ('+days[0].sn+'); le tappe successive completano il giro e rientrano al punto di partenza. ':'Sale fino a '+pk[0]+' passando per punti acqua e rientra al punto di partenza. ')+'Totale circa '+km.toFixed(1).replace('.',',')+' km con D+ '+tdp+' m e quota massima di circa '+mx+' m. Posizioni, quote e distanze sono stime generate: verifica tutto su carta e GPX aggiornati prima di partire.',days}};
+
+const WL={p:'Vetta',r:'Rifugio',b:'Bivacco',w:'Acqua',e:'Emergenza / SOS'},WN={p:'Nuova vetta',r:'Nuovo rifugio',b:'Nuovo bivacco',w:'Nuova sorgente',e:'Punto segnale / SOS'};
+const gen=(s,km,e1,idx,n0,n1)=>{const br=(40+80*idx)*Math.PI/180,L=km*.006,dx=Math.sin(br)*L,dy=Math.cos(br)*L,c=Math.cos(s.lat*Math.PI/180);return[0,.28,.55,.8,1].map((t,i,a)=>{const w=Math.sin(t*Math.PI*2)*.18;return{lat:+(s.lat+dy*t+dx*w).toFixed(5),lon:+(s.lon+(dx*t-dy*w)/c).toFixed(5),ele:Math.max(0,Math.round(s.ele+(e1-s.ele)*t+Math.sin(t*Math.PI)*Math.abs(e1-s.ele)*.15)),...(i===0?{n:n0,t:'s'}:i===a.length-1?{n:n1,t:'s'}:{})}})};
+const newDay=(prev,idx,from)=>{const dp=600,dm=400,s=prev||{lat:45.95,lon:10.9,ele:1200};return{km:10,dp,dm,cai:'E',sleep:null,sn:'',water:[],esc:['Definisci la via di fuga per questa tappa.'],pts:gen(s,10,Math.max(0,s.ele+dp-dm),idx,from||'Partenza','Meta')}};
+const norm=dr=>({...dr,name:(dr.name||'').trim()||'Nuovo itinerario',zone:(dr.zone||'').trim()||'Itinerario personalizzato',days:dr.days.map((d,i)=>{const pts=d.pts.map(p=>({...p,n:p.n&&p.n.trim()?p.n.trim():undefined})),L=pts.length-1;pts[0].n=pts[0].n||'Partenza';pts[L].n=pts[L].n||'Meta';pts[0].t=i?dr.days[i-1].sleep||'s':'s';pts[L].t=d.sleep||'s';return{...d,km:+d.km||0,dp:+d.dp||0,dm:+d.dm||0,pts}})});
+
+const TimeBox=({d})=>{const c=calc(d);return h`<div className="text-right"><div className=${'font-bold flex items-center gap-1 justify-end '+(c.t>7?'text-red-400':'')}><${Ic} n="Clock" s=${14}/> ${fh(c.t)}</div><div className="text-xs mu">${MODE.method==='cai'?'Metodo CAI':'Munter '+MODE.speed+' km/h'}</div></div>`};
+const Info=({d})=>{const c=calc(d),p=pace(d,c.t);return h`<div className="text-xs space-y-1"><div className="mu">Passo medio ≈ <b>${p.kmh.toFixed(1).replace('.',',')} km/h</b> · ${Math.round(p.mk)} min/km${MODE.method==='cai'?' · intervallo '+fh(c.lo)+' – '+fh(c.hi):' · '+c.ek.toFixed(1).replace('.',',')+' km-sforzo'}</div>${c.t>7?h`<div role="alert" className="rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 font-semibold px-2.5 py-1.5 flex gap-1.5 items-start"><${Ic} n="TriangleAlert" s=${15}/> Tappa lunga: ${fh(c.t)} di marcia effettiva, oltre le 7 ore. Valuta di partire all’alba o spezzare la tappa.</div>`:c.hi>7?h`<div className="rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 font-semibold px-2.5 py-1.5">Attenzione: con il ritmo prudente (${fh(c.hi)}) la tappa supera le 7 ore.</div>`:null}</div>`};
+const fh=t=>{let m=Math.round(t*60);return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')};
+const nm=(d,i)=>(d.pts[0]?d.pts[0].n||'Partenza':'Inizio')+' → '+(d.pts.length?d.pts[d.pts.length-1].n||'Arrivo':'Fine');
+
+const gpx=it=>{const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');let x='<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="QuotaZero" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>'+e(it.name)+'</name></metadata>
+';
+it.days.forEach((d,i)=>d.pts.filter(p=>p.n).forEach(p=>x+='<wpt lat="'+p.lat+'" lon="'+p.lon+'"><ele>'+p.ele+'</ele><name>'+e(p.n)+'</name><desc>Giorno '+(i+1)+'</desc></wpt>
+'));
+it.days.forEach((d,i)=>{x+='<trk><name>'+e(it.name+' – Giorno '+(i+1))+'</name><trkseg>'+d.pts.map(p=>'<trkpt lat="'+p.lat+'" lon="'+p.lon+'"><ele>'+p.ele+'</ele></trkpt>').join('')+'</trkseg></trk>
+'});return x+'</gpx>'};
+
+const parse=(txt,fn)=>{const doc=new DOMParser().parseFromString(txt,'application/xml');if(doc.querySelector('parsererror'))throw 0;
+let segs=[...doc.getElementsByTagName('trkseg')].map(s=>[...s.getElementsByTagName('trkpt')]);
+if(!segs.length){const r=[...doc.getElementsByTagName('rtept')];if(r.length)segs=[r]}
+segs=segs.filter(s=>s.length>1);if(!segs.length)throw 0;
+const wps=[...doc.getElementsByTagName('wpt')].map(w=>({lat:+w.getAttribute('lat'),lon:+w.getAttribute('lon'),n:(w.getElementsByTagName('name')[0]||{}).textContent||''}));
+const days=segs.map(s=>{const all=s.map(p=>({lat:+p.getAttribute('lat'),lon:+p.getAttribute('lon'),ele:Math.round(+((p.getElementsByTagName('ele')[0]||{}).textContent||0))}));
+let km=0,dp=0,dm=0,a=all[0].ele;all.forEach((p,i)=>{if(i)km+=hav(all[i-1],p);if(p.ele-a>=3){dp+=p.ele-a;a=p.ele}else if(a-p.ele>=3){dm+=a-p.ele;a=p.ele}});
+const st=Math.ceil(all.length/80),pts=all.filter((p,i)=>i%st===0||i===all.length-1);
+wps.forEach(w=>{let b=null,bd=.3;pts.forEach(p=>{const q=hav(p,w);if(q<bd){bd=q;b=p}});if(b){b.n=w.n;b.t='w'}});
+pts[0].n=pts[0].n||'Partenza';pts[0].t=pts[0].t||'s';const L=pts[pts.length-1];L.n=L.n||'Arrivo';L.t=L.t||'s';
+return{km:Math.round(km*10)/10,dp:Math.round(dp),dm:Math.round(dm),cai:'E',sleep:null,sn:'',water:[],esc:['Da definire: individua il punto di rientro più vicino.'],pts}});
+days.forEach((d,i)=>{if(i<days.length-1)d.sleep='t'});
+return{name:fn.replace(/\.gpx$/i,''),zone:'Importato da GPX · '+days.length+' giorn'+(days.length>1?'i':'o'),days}};
+
+const sun=(la,lo,ds)=>{const r=Math.PI/180,d=new Date(ds+'T12:00:00Z'),N=Math.round((d-Date.UTC(d.getUTCFullYear(),0,0))/864e5),B=r*360/365*(N-81),eq=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B),dc=23.44*r*Math.sin(B),c=-Math.tan(la*r)*Math.tan(dc);if(c>1||c<-1)return['—','—',13];const ha=Math.acos(c)/r/15,nn=12-lo/15-eq/60,f=t=>new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())+t*36e5).toLocaleTimeString('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit'});return[f(nn-ha),f(nn+ha),13+9*Math.sin(2*Math.PI*(N-110)/365)]};
+
+const rnd=s=>()=>(s=(s*16807)%2147483647)/2147483647;
+const crv=q=>{if(q.length<2)return'';const f=n=>n.toFixed(1);let d='M'+f(q[0][0])+' '+f(q[0][1]);for(let i=0;i<q.length-1;i++){const a=q[i-1]||q[i],b=q[i],c=q[i+1],e=q[i+2]||c;d+=' C'+f(b[0]+(c[0]-a[0])/6)+' '+f(b[1]+(c[1]-a[1])/6)+' '+f(c[0]-(e[0]-b[0])/6)+' '+f(c[1]-(e[1]-b[1])/6)+' '+f(c[0])+' '+f(c[1])}return d};
+const ring=(cx,cy,R,ph)=>{let d='';for(let i=0;i<=40;i++){const t=i/40*2*Math.PI,r=R*(1+.14*Math.sin(3*t+ph)+.08*Math.sin(5*t+ph*2.3)+.05*Math.sin(2*t+ph*.7));d+=(i?'L':'M')+(cx+r*Math.cos(t)*1.15).toFixed(1)+' '+(cy+r*Math.sin(t)*.85).toFixed(1)}return d+'Z'};
+const MapV=({it,sel,wp,setWp,onPick})=>{const all=it.days.flatMap(d=>d.pts);if(!all.length)return h`<div className="p-4 mu text-sm">Nessuna traccia da mostrare.</div>`;
+const la=all.map(p=>p.lat),lo=all.map(p=>p.lon),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo),k=Math.cos((a0+a1)/2*Math.PI/180),w=(o1-o0)*k||1e-3,hh=a1-a0||1e-3,W=340,H=300,pd=44,s=Math.min((W-2*pd)/w,(H-2*pd)/hh),ox=(W-w*s)/2,oy=(H-hh*s)/2,X=p=>ox+(p.lon-o0)*k*s,Y=p=>H-oy-(p.lat-a0)*s;
+const R=rnd(Math.abs((all[0].lat*1e4|0)+(all[0].lon*1e4|0)*3+7)%2147483646+1),e0=Math.min(...all.map(p=>p.ele)),e1=Math.max(...all.map(p=>p.ele));
+const hills=[...all].sort((a,b)=>b.ele-a.ele).filter((p,i,a)=>a.findIndex(q=>Math.hypot(X(q)-X(p),Y(q)-Y(p))<40)===i).slice(0,4).map(p=>({x:X(p),y:Y(p),r:46+34*(p.ele-e0)/Math.max(1,e1-e0)}));for(let i=0;i<3;i++)hills.push({x:R()*W,y:R()*H,r:40+R()*44});
+return h`<svg viewBox="0 0 ${W} ${H}" className="w-full lg:h-full block" onClick=${onPick?e=>{const r=e.currentTarget.getBoundingClientRect();onPick(a0+(H-oy-(e.clientY-r.top)/r.height*H)/s,o0+((e.clientX-r.left)/r.width*W-ox)/(k*s))}:undefined} style=${{background:'#1e293b'}} role="img" aria-label="Mappa topografica del tracciato">
+<defs>${hills.map((q,i)=>h`<radialGradient key=${i} id=${'hl'+i} cx="38%" cy="35%" r="65%"><stop offset="0" stopColor="#fff" stopOpacity=".08"/><stop offset="1" stopColor="#fff" stopOpacity="0"/></radialGradient>`)}</defs>
+${hills.map((q,i)=>h`<g key=${'h'+i}><ellipse cx=${q.x+q.r*.18} cy=${q.y+q.r*.2} rx=${q.r*1.1} ry=${q.r*.85} fill="#000" opacity=".2"/><ellipse cx=${q.x} cy=${q.y} rx=${q.r*1.1} ry=${q.r*.85} fill=${'url(#hl'+i+')'}/>${[0,1,2,3,4,5,6].map(j=>h`<path key=${j} d=${ring(q.x,q.y,q.r*(1-j*.13),i*1.7)} fill="none" stroke=${j%3===0?'#475569':'#334155'} strokeWidth=${j%3===0?1.1:.7} strokeLinejoin="round"/>`)}</g>`)}
+${it.days.map((d,i)=>{const q=d.pts.map(p=>[X(p),Y(p)]);return h`<g key=${i} opacity=${sel<0||sel===i?1:.2}><path d=${crv(q)} fill="none" stroke="#0f172a" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity=".55"/><path d=${crv(q)} fill="none" stroke=${DC[i%5]} strokeWidth="3.2" strokeLinecap="round" strokeDasharray="9 5"/></g>`})}
+${it.days.map((d,i)=>(sel<0||sel===i)&&d.pts.map((p,j)=>{if(!p.n)return null;const x=X(p),y=Y(p),bw=p.n.length*5.3+10,fl=x+14+bw>W-4,on=wp&&wp.d===i&&wp.j===j,ry=Math.min(H-18,Math.max(2,y-8));return h`<g key=${i+'-'+j} onClick=${()=>setWp({d:i,j})} style=${{cursor:'pointer'}}>
+<rect x=${fl?x-14-bw:x+14} y=${ry} width=${bw} height="16" rx="5" fill="#0f172a" stroke="#334155" strokeWidth="1" opacity=".92"/><text x=${fl?x-14-bw/2:x+14+bw/2} y=${ry+11.5} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#f8fafc">${p.n}</text>
+<circle cx=${x} cy=${y} r=${'rbte'.includes(p.t)?10:7} fill=${TC[p.t]||'#94a3b8'} stroke=${on?'#fff':'#0f172a'} strokeWidth=${on?3:2}/>${'rbte'.includes(p.t)&&h`<text x=${x} y=${y+3.5} textAnchor="middle" fontSize="10" fontWeight="800" fill="#fff">${p.t.toUpperCase()}</text>`}</g>`}))}
+<g transform="translate(314,28)"><circle r="15" fill="#0f172a" opacity=".8"/><path d="M0 -11 L4 2 L0 0 L-4 2Z" fill="#f8fafc"/><text y="11" textAnchor="middle" fontSize="8" fontWeight="700" fill="#94a3b8">N</text></g></svg>`};
+
+const Prof=({it})=>{let off=0;const segs=it.days.map(d=>{const raw=[0];d.pts.forEach((p,j)=>{if(j)raw.push(raw[j-1]+hav(d.pts[j-1],p))});const t=raw[raw.length-1]||1,o=d.pts.map((p,j)=>({x:off+raw[j]/t*d.km,p}));off+=d.km;return o});
+const es=segs.flat().map(q=>q.p.ele);if(!es.length)return null;const mn=Math.floor(Math.min(...es)/100)*100-100,mx=Math.ceil(Math.max(...es)/100)*100+100,W=340,H=170,L=36,R=8,T=18,B=22,X=x=>L+x/(off||1)*(W-L-R),Y=e=>T+(mx-e)/(mx-mn)*(H-T-B);
+return h`<svg viewBox="0 0 ${W} ${H}" className="w-full lg:max-h-64" role="img" aria-label="Profilo altimetrico">
+${[mn,(mn+mx)/2,mx].map(v=>h`<g key=${v}><line x1=${L} x2=${W-R} y1=${Y(v)} y2=${Y(v)} stroke="currentColor" opacity=".15"/><text x="2" y=${Y(v)+3} fontSize="9" fill="currentColor" opacity=".7">${Math.round(v)} m</text></g>`)}
+${segs.map((sg,i)=>{if(sg.length<2)return null;const pl=sg.map(q=>X(q.x).toFixed(1)+','+Y(q.p.ele).toFixed(1)).join(' ');return h`<g key=${i}><polygon points=${pl+' '+X(sg[sg.length-1].x)+','+(H-B)+' '+X(sg[0].x)+','+(H-B)} fill=${DC[i%5]} opacity=".22"/><polyline points=${pl} fill="none" stroke=${DC[i%5]} strokeWidth="2.5"/><text x=${X(sg[0].x)+3} y="11" fontSize="10" fontWeight="700" fill=${DC[i%5]}>G${i+1}</text></g>`})}
+${segs.flat().map((q,i)=>'rbte'.includes(q.p.t||'-')&&h`<g key=${'m'+i}><line x1=${X(q.x)} x2=${X(q.x)} y1=${Y(q.p.ele)} y2=${Y(q.p.ele)-9} stroke=${TC[q.p.t]} strokeWidth="1.5"/><circle cx=${X(q.x)} cy=${Y(q.p.ele)-14} r="6.5" fill=${TC[q.p.t]}/><text x=${X(q.x)} y=${Y(q.p.ele)-10.5} textAnchor="middle" fontSize="9" fontWeight="800" fill="#fff">${q.p.t.toUpperCase()}</text></g>`)}
+<text x=${L} y=${H-6} fontSize="9" fill="currentColor" opacity=".7">0 km</text><text x=${W-R} y=${H-6} textAnchor="end" fontSize="9" fill="currentColor" opacity=".7">${off.toFixed(1)} km</text></svg>`};
+
+function App(){
+const[its,setIts]=useState(()=>ls.getIts()||PRE),[ci,setCi]=useState(0),[method,setMethod]=useState('cai'),[speed,setSpeed]=useState(4),[cfg,setCfg]=useState(()=>ls.get()),[dr,setDr]=useState(()=>ls.get()),[cm,setCm]=useState(false),[cs,setCs]=useState(null),[busy,setBusy]=useState(false),[dc,setDc]=useState(null),[pk,setPk]=useState(false),[ed,setEd]=useState(null),[pt,setPt]=useState(null),[aq,setAq]=useState(''),[af,setAf]=useState({}),[ab,setAb]=useState(false),[ast,setAst]=useState(null),[tab,setTab]=useState(0),[sel,setSel]=useState(-1),[wp,setWp]=useState(null),[ck,setCk]=useState({}),[dt,setDt]=useState(new Date().toISOString().slice(0,10)),[msg,setMsg]=useState('');
+
+useEffect(()=>{ls.setIts(its)},[its]);
+useEffect(()=>{if(msg){const t=setTimeout(()=>setMsg(''),4500);return()=>clearTimeout(t)}},[msg]);
+
+MODE.method=method;MODE.speed=speed;const it=its[ci]||its[0],ds=it.days,upd=(i,p)=>setIts(its.map((x,a)=>a!==ci?x:{...x,days:x.days.map((d,j)=>j===i?{...d,...p}:d)})),setDays=f=>setIts(its.map((x,a)=>a!==ci?x:{...x,days:f(x.days)}));
+const tot={km:ds.reduce((a,d)=>a+d.km,0),dp:ds.reduce((a,d)=>a+d.dp,0),dm:ds.reduce((a,d)=>a+d.dm,0),t:ds.reduce((a,d)=>a+tm(d),0)};
+const pickIt=i=>{setCi(i);setSel(-1);setWp(null)};
+
+const save=async(fn,data,mime='application/octet-stream')=>{
+  try{
+    if(window.claude){
+      const d=await claude.use('downloads');
+      if(d){await d.save({filename:fn,data});setMsg('File scaricato: '+fn);return}
+    }
+  }catch(e){}
+  try{
+    const blob=new Blob([data],{type:mime});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=fn;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},150);
+    setMsg('Download avviato: '+fn);
+  }catch(e){setMsg('Salvataggio non riuscito sul browser.')}
+};
+
+const slug=it.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const onFile=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const n=parse(t,f.name);setIts([...its,n]);pickIt(its.length);setMsg('GPX importato: '+n.days.length+' giorni, '+n.days.reduce((a,d)=>a+d.km,0).toFixed(1)+' km.')}catch(x){setMsg('File GPX non valido o senza tracce.')}});e.target.value=''};
+
+const extras=[];if(ds.length>1)extras.push('Sacco a pelo','Fornelletto + gas','Lampada frontale + pile di riserva','Materassino','Cambio asciutto per la notte','Kit igiene minimo');
+if(ds.some(d=>d.sleep==='r'))extras.push('Sacco lenzuolo','Ciabatte leggere','Contanti per il rifugio');if(ds.some(d=>d.sleep==='b'))extras.push('Telo di emergenza extra','Acqua di riserva 2 L');if(ds.some(d=>d.sleep==='t'))extras.push('Tenda','Picchetti e cordini','Pentolino');
+if(ds.some(d=>d.cai==='EEA'))extras.push('Kit da ferrata (imbrago, dissipatore, casco)');else if(ds.some(d=>d.cai==='EE'))extras.push('Casco leggero');
+if(Math.max(0,...ds.flatMap(d=>d.pts.map(p=>p.ele)))>2200)extras.push('Guanti e berretto','Strato imbottito');
+const base=['Zaino 30–40 L','Scarponi da trekking','Giacca antipioggia','Strato caldo (pile)','Borraccia 2 L','Mappa e GPX offline','Kit primo soccorso','Telo termico','Crema solare e occhiali','Cibo energetico','Fischietto'];
+
+const wx=d=>{const mxE=Math.max(0,...d.pts.map(p=>p.ele)),c=d.pts[0]||{lat:45,lon:11},[sr,ss,T0]=sun(c.lat,c.lon,dt);return{mxE,sr,ss,T0,t:e=>Math.round(T0-6.5*e/1000),iso:T0>0?Math.round(T0/.0065/50)*50:0}};
+const sheet=()=>{const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');return '<!DOCTYPE html><html lang="it"><meta charset="utf-8"><title>Scheda sicurezza – '+e(it.name)+'</title><body style="font-family:sans-serif;max-width:720px;margin:24px auto;line-height:1.45;color:#111"><h1>Scheda sicurezza: '+e(it.name)+'</h1><p><b>Data partenza:</b> '+dt+' · <b>Totale:</b> '+tot.km.toFixed(1)+' km, D+ '+tot.dp+' m, D− '+tot.dm+' m, circa '+fh(tot.t)+' di marcia</p><p><b>Referente a casa:</b> ______________ <b>Telefono:</b> ______________<br><b>Ora di rientro prevista:</b> ______ · <b>Allerta se non rientro entro:</b> ______<br><b>Partecipanti / telefoni:</b> ____________________________________<br><b>Emergenza:</b> 112 (NUE) · Soccorso alpino: 118 · App GeoResQ</p>'+ds.map((d,i)=>{const x=wx(d);return '<h2>Giorno '+(i+1)+': '+e(nm(d))+'</h2><p>'+d.km+' km · D+ '+d.dp+' m · D− '+d.dm+' m · difficoltà '+d.cai+' · circa '+fh(tm(d))+'<br>Alba ≈ '+x.sr+' · tramonto ≈ '+x.ss+' · quota max '+x.mxE+' m (≈ '+x.t(x.mxE)+' °C, stima)<br>Pernottamento: '+(d.sleep?SL[d.sleep]+(d.sn?' – '+e(d.sn):''):'nessuno (rientro)')+'<br>Acqua: '+(d.water.length?e(d.water.join(', ')):'non indicata')+'</p><b>Vie di fuga</b><ul>'+d.esc.map(v=>'<li>'+e(v)+'</li>').join('')+'</ul><p><b>Piano B:</b> in caso di meteo avverso rinuncia alla cresta e scendi dalla via di fuga più vicina.</p>'}).join('')+'<p style="font-size:12px;color:#555">Dati demo/stimati: verifica sentieri, aperture dei rifugi e bollettino meteo ufficiale prima di partire.</p></body></html>'};
+
+const wpd=wp&&ds[wp.d]&&ds[wp.d].pts[wp.j];
+const sb=React.useMemo(()=>{try{return cfg.url&&cfg.key&&window.supabase?supabase.createClient(cfg.url.trim(),cfg.key.trim(),{auth:{persistSession:false}}):null}catch(e){return null}},[cfg]);
+const AC={rifugio:'r',bivacco:'b',tenda:'t'},CA={r:'rifugio',b:'bivacco',t:'tenda'};
+const toIt=t=>({name:t.title,zone:t.region||'',cloudId:t.id,desc:(((t.stages||[]).find(s=>s.day_number===1)||{}).gpx_data||{}).desc||undefined,days:(t.stages||[]).slice().sort((a,b)=>a.day_number-b.day_number).map(s=>{const g=s.gpx_data||{};return{km:+s.distance_km,dp:s.elevation_gain,dm:s.elevation_loss,cai:s.cai_difficulty||'E',sleep:AC[s.accommodation_type]||null,sn:g.sn||'',water:g.water||[],esc:g.esc||[],pts:g.pts||[]}})});
+const loadCloud=async(c=sb,focus)=>{if(!c)return;setBusy(true);const{data,error}=await c.from('treks').select('*, stages(*)').order('created_at',{ascending:false});setBusy(false);if(error){setCs({ok:false,t:err(error)});return}
+const next=[...its.filter(x=>!x.cloudId),...data.map(toIt)];setIts(next);setCs({ok:true,t:'Connesso · '+data.length+' trekking nel cloud'});
+if(focus){const k=next.findIndex(x=>x.cloudId===focus);if(k>=0){setCi(k);setSel(-1);setWp(null)}}else if(ci>=next.length)setCi(0)};
+useEffect(()=>{loadCloud()},[sb]);
+
+const toCloud=async()=>{if(!sb){setMsg('Inserisci URL e chiave nelle Impostazioni Cloud.');setCm(true);return}
+setBusy(true);const{data:t,error}=await sb.from('treks').insert({title:it.name,region:it.zone,total_days:ds.length}).select().single();
+if(error){setBusy(false);setMsg(err(error));return}
+const{error:e2}=await sb.from('stages').insert(ds.map((d,i)=>({trek_id:t.id,day_number:i+1,distance_km:d.km,elevation_gain:Math.round(d.dp),elevation_loss:Math.round(d.dm),cai_difficulty:d.cai,accommodation_type:CA[d.sleep]||null,gpx_data:{pts:d.pts,water:d.water,esc:d.esc,sn:d.sn,desc:i===0?(it.desc||null):undefined}})));
+if(e2){await sb.from('treks').delete().eq('id',t.id);setBusy(false);setMsg(err(e2));return}
+if(it.cloudId)await sb.from('treks').delete().eq('id',it.cloudId);
+await loadCloud(sb,t.id);setBusy(false);setMsg('Salvato nel cloud: '+it.name)};
+
+const delIt=async i=>{const x=its[i];if(dc!==i){setDc(i);return}setDc(null);if(its.length<2){setMsg('Deve restare almeno un itinerario.');return}
+if(x.cloudId){if(!sb){setMsg('Cloud non configurato.');return}setBusy(true);const{error}=await sb.from('treks').delete().eq('id',x.cloudId);setBusy(false);if(error){setMsg(err(error));return}}
+setIts(its.filter((_,a)=>a!==i));setCi(0);setSel(-1);setWp(null);setMsg('Itinerario eliminato.')};
+
+useEffect(()=>{setPt(null)},[ed===null]);
+const setPos=(i,j,la,lo)=>eD(d=>{const Li=d.days[i].pts.length-1,ch=(x,b)=>({...x,pts:x.pts.map((q,c)=>c===b?{...q,lat:la,lon:lo}:q)});return{...d,days:d.days.map((x,a)=>a===i?ch(x,j):a===i+1&&j===Li?ch(x,0):a===i-1&&j===0?ch(x,x.pts.length-1):x)}});
+const placePick=(la,lo)=>{if(!pt)return;setPos(pt.i,pt.j,+la.toFixed(5),+lo.toFixed(5));setPt(null)};
+const isP=(i,j)=>!!pt&&pt.i===i&&pt.j===j,pinF=(i,j)=>setPt(isP(i,j)?null:{i,j});
+
+const planAI=async()=>{const q=aq.trim();if(!q){setAst({t:'Scrivi dove vuoi andare, per esempio: anello di 2 giorni dall’Abetone.',err:1});return}
+if(ab)return;setAb(true);setAst({t:'Analisi del territorio in corso…'});let r=null,ai=false;
+try{const sm=window.claude&&await claude.use('sample');if(sm){r=fixAI(await sm.json(PROMPT(q,af),{modelTier:'default',cache:false}));ai=!!r}}catch(e){r=null}
+let miss=false;if(!r){const x=mockRoute(q,af);miss=x.miss;delete x.miss;r=norm(x)}
+setIts([...its,{...r,ai:true}]);pickIt(its.length);setAb(false);setTab(0);
+setAst({t:(ai?'Percorso generato da IA. Coordinate e quote sono stime: verificale su una carta aggiornata.':'Generatore locale attivo (salvato automaticamente nel browser).'+(miss?' Zona non riconosciuta: ho usato l’Appennino tosco-emiliano come esempio.':'')+' Verifica sempre su carta e GPX.')})};
+
+const planner=h`<div className="cd space-y-2.5"><div className="flex items-center gap-2"><span className="grid place-items-center w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400"><${Ic} n="Sparkles" s=${15}/></span><b>Pianificatore IA</b></div>
+<textarea rows="3" aria-label="Descrivi il percorso" placeholder="Scrivi dove vuoi andare, es: Anello di 2 giorni con partenza dall’Abetone passando per il Libro Aperto e bivacco notturno" value=${aq} onChange=${e=>setAq(e.target.value)} onKeyDown=${e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))planAI()}}></textarea>
+<div className="flex flex-wrap items-center gap-1.5"><span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-0.5">Difficoltà</span>${['Facile','Medio','Difficile'].map(k=>h`<button key=${k} className=${'pill !py-1 '+(af.diff===k?'pon':'')} onClick=${()=>setAf({...af,diff:af.diff===k?null:k})}>${k}</button>`)}<span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 pl-1.5 pr-0.5">Durata</span>${[1,2].map(k=>h`<button key=${k} className=${'pill !py-1 '+(af.dur===k?'pon':'')} onClick=${()=>setAf({...af,dur:af.dur===k?null:k})}>${k} giorn${k>1?'i':'o'}</button>`)}</div>
+<button className="pill pon w-full justify-center !py-2.5" disabled=${ab} onClick=${planAI}><${Ic} n="Sparkles" s=${15}/> ${ab?'Analisi del territorio…':'Genera itinerario'}</button>
+${ast&&h`<div role="status" className=${'text-xs rounded-lg px-2.5 py-1.5 '+(ast.err?'bg-red-500/20 border border-red-500/40 text-red-200':'bg-slate-800 border border-slate-700 text-slate-200')}>${ast.t}</div>`}</div>`;
+
+const descCard=it.desc&&h`<div className="cd space-y-2"><div className="flex items-center gap-2"><b className="flex-1 truncate">${it.name}</b>${it.ai&&h`<span className="rounded-full bg-emerald-500/15 text-emerald-400 text-[11px] font-bold px-2 py-0.5">IA</span>`}</div><p className="text-sm text-slate-300 leading-relaxed">${it.desc}</p>
+${it.ai&&h`<div className="space-y-1 text-xs text-slate-400">${ds.map((d,i)=>h`<div key=${i}><b style=${{color:DC[i%5]}}>G${i+1}</b> · ${d.km} km · D+ ${d.dp} m · D− ${d.dm} m · ${d.cai} · ${fh(calc(d).t)}</div>`)}</div><div className="flex flex-wrap gap-1.5"><button className="pill pon" onClick=${()=>openEd('edit')}><${Ic} n="Pencil" s=${14}/> Modifica</button><button className="pill" disabled=${busy} onClick=${toCloud}><${Ic} n="Cloud" s=${14}/> ${it.cloudId?'Aggiorna':'Salva nel cloud'}</button><button className="pill" onClick=${()=>save(slug+'.gpx',gpx(it),'application/gpx+xml')}><${Ic} n="Download" s=${14}/> GPX</button></div>`}</div>`;
+
+const go=i=>{setTab(i);if(window.matchMedia&&window.matchMedia('(min-width:1024px)').matches){const e=document.getElementById('sec'+i);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})}};
+const sum=x=>({km:x.days.reduce((a,d)=>a+d.km,0),dp:x.days.reduce((a,d)=>a+d.dp,0),t:x.days.reduce((a,d)=>a+calc(d).t,0)});
+
+const deskPicker=h`<div className="hidden lg:block cd !p-0 overflow-hidden"><div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-slate-700/60"><b className="flex-1 flex items-center gap-1.5"><${Ic} n="Route" s=${16}/> Itinerari salvati</b><button className="pill !py-1.5" onClick=${()=>openEd('new')}><${Ic} n="Plus" s=${14}/> Nuovo</button><button aria-label="Modifica itinerario" title="Modifica l’itinerario attivo" className="grid place-items-center w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" onClick=${()=>openEd('edit')}><${Ic} n="Pencil" s=${16}/></button></div>
+<div className="max-h-56 overflow-y-auto p-2 space-y-1.5">${its.map((x,i)=>{const s=sum(x);return h`<button key=${i} onClick=${()=>pickIt(i)} className=${'w-full text-left rounded-xl px-3 py-2 border transition '+(i===ci?'bg-slate-800 border-emerald-500/70':'bg-slate-900/70 border-slate-800 hover:bg-slate-800/60')}><div className="font-semibold text-sm truncate flex items-center gap-1.5"><span className="flex-1 truncate">${x.name}</span>${x.cloudId&&h`<span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">☁ Cloud</span>`}</div><div className="text-xs text-slate-400 truncate">${x.zone}</div><div className="flex flex-wrap gap-1.5 mt-1.5">${[['Route',s.km.toFixed(1)+' km'],['TrendingUp','D+ '+s.dp+' m'],['Clock',fh(s.t)]].map(([n,t])=>h`<span key=${n} className="inline-flex items-center gap-1 rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-200"><${Ic} n=${n} s=${11}/>${t}</span>`)}</div></button>`})}</div></div>`;
+
+const openEd=m=>setEd(m==='new'?{mode:'new',d:{name:'',zone:'',days:[newDay(null,0)]}}:{mode:'edit',d:JSON.parse(JSON.stringify(it))});
+const eD=f=>setEd(e=>({...e,d:f(e.d)}));
+const eDays=(i,f)=>eD(d=>({...d,days:d.days.map((x,a)=>a===i?f(x):x)}));
+const eDay=(i,p)=>eDays(i,x=>({...x,...p}));
+const eName=(i,end,v)=>eD(d=>({...d,days:d.days.map((x,a)=>{const L=x.pts.length-1;let j=-1;if(a===i)j=end?L:0;else if(end&&a===i+1)j=0;else if(!end&&a===i-1)j=L;return j<0?x:{...x,pts:x.pts.map((q,b)=>b===j?{...q,n:v}:q)}})}));
+const setSl=(i,k)=>eD(d=>({...d,days:d.days.map((x,a)=>{const L=x.pts.length-1;if(a===i)return{...x,sleep:k,pts:x.pts.map((q,b)=>b===L?{...q,t:k||'s'}:q)};if(a===i+1)return{...x,pts:x.pts.map((q,b)=>b===0?{...q,t:k||'s'}:q)};return x})}));
+const addWp=(i,t)=>{setPt({i,j:ed.d.days[i].pts.length-1});eDays(i,x=>{const L=x.pts.length-1,A=x.pts[L-1],B=x.pts[L],m={lat:+((A.lat+B.lat)/2).toFixed(5),lon:+((A.lon+B.lon)/2).toFixed(5),ele:Math.round((A.ele+B.ele)/2),n:WN[t],t};return{...x,pts:[...x.pts.slice(0,L),m,B],water:t==='w'?[...x.water,m.n]:x.water}})};
+const delWp=(i,j)=>eDays(i,x=>{const p=x.pts[j];return{...x,pts:x.pts.filter((_,b)=>b!==j),water:p.t==='w'?x.water.filter(w=>w!==p.n):x.water}});
+const renWp=(i,j,v)=>eDays(i,x=>{const p=x.pts[j];return{...x,pts:x.pts.map((q,b)=>b===j?{...q,n:v}:q),water:p.t==='w'?x.water.map(w=>w===p.n?v:w):x.water}});
+const typWp=(i,j,t)=>eDays(i,x=>{const p=x.pts[j];let w=x.water.filter(v=>p.t!=='w'||v!==p.n);if(t==='w'&&p.n)w=[...w,p.n];return{...x,pts:x.pts.map((q,b)=>b===j?{...q,t}:q),water:w}});
+const addDay=()=>eD(d=>{const l=d.days[d.days.length-1],e=l.pts[l.pts.length-1],n=d.days.length;return{...d,days:[...d.days.map((x,i)=>i===n-1&&!x.sleep?{...x,sleep:'r',pts:x.pts.map((q,b)=>b===x.pts.length-1?{...q,t:'r'}:q)}:x),newDay(e,n,e.n)]}});
+const saveEd=()=>{const n=norm(ed.d);if(ed.mode==='new'){setIts([...its,n]);setCi(its.length);setTab(0)}else setIts(its.map((x,a)=>a===ci?n:x));setSel(-1);setWp(null);setMsg(ed.mode==='new'?'Itinerario creato e salvato in locale.':'Modifiche salvate in locale.');setEd(null)};
+
+const editor=ed&&h`<div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex justify-center"><div role="dialog" aria-label="Editor itinerario" className="w-full max-w-md lg:max-w-2xl bg-slate-900 flex flex-col h-full lg:border-x lg:border-slate-700">
+<div className="flex items-center gap-2 px-4 pb-3 border-b border-slate-800" style=${{paddingTop:'calc(14px + env(safe-area-inset-top,0px))'}}><b className="flex-1 text-lg">${ed.mode==='new'?'Nuovo itinerario':'Modifica itinerario'}</b><button aria-label="Chiudi" className="grid place-items-center w-9 h-9 rounded-xl border border-slate-700 bg-slate-800" onClick=${()=>setEd(null)}><${Ic} n="X" s=${16}/></button></div>
+<div className="flex-1 overflow-y-auto p-4 space-y-3">
+<div className="cd space-y-2"><label className="text-xs mu block">Nome itinerario<input value=${ed.d.name} placeholder="Es. Anello del Monte Rosa" onChange=${e=>eD(d=>({...d,name:e.target.value}))}/></label><label className="text-xs mu block">Zona / gruppo montuoso<input value=${ed.d.zone} placeholder="Es. Alpi Pennine" onChange=${e=>eD(d=>({...d,zone:e.target.value}))}/></label><label className="text-xs mu block">Descrizione<textarea rows="3" value=${ed.d.desc||''} placeholder="Note sul percorso" onChange=${e=>eD(d=>({...d,desc:e.target.value}))}></textarea></label></div>
+<div className="cd !p-0 overflow-hidden"><${MapBox} it=${ed.d} sel=${-1} wp=${null} setWp=${()=>{}} fk=${'ed'+ed.mode} pick=${!!pt} onPick=${placePick}/><div className=${'px-3.5 py-2 text-[11px] '+(pt?'text-emerald-400 font-semibold':'mu')}>${pt&&ed.d.days[pt.i]&&ed.d.days[pt.i].pts[pt.j]?'Tocca la mappa per posizionare «'+(ed.d.days[pt.i].pts[pt.j].n||'punto')+'»':'Anteprima della traccia. Premi il pin di un punto, poi tocca la mappa per posizionarlo.'}</div></div>
+${ed.d.days.map((d,i)=>h`<div key=${i} className="cd space-y-3" style=${{borderLeft:'6px solid '+DC[i%5]}}>
+<div className="flex items-center"><b className="flex-1">Giorno ${i+1}</b>${ed.d.days.length>1&&h`<button aria-label="Rimuovi giorno" className="grid place-items-center w-9 h-9 rounded-xl border border-slate-700 bg-slate-800" onClick=${()=>eD(x=>({...x,days:x.days.filter((_,j)=>j!==i)}))}><${Ic} n="Trash2" s=${15}/></button>`}</div>
+<div className="grid grid-cols-2 gap-2 text-xs mu"><label>Partenza<input value=${d.pts[0].n||''} onChange=${e=>eName(i,false,e.target.value)}/></label><label>Meta<input value=${d.pts[d.pts.length-1].n||''} onChange=${e=>eName(i,true,e.target.value)}/></label></div>
+<div className="space-y-1.5"><div className="text-xs mu">Coordinate partenza (lat, lon)</div><${Pos} p=${d.pts[0]} set=${(la,lo)=>setPos(i,0,la,lo)} on=${isP(i,0)} pin=${()=>pinF(i,0)}/><div className="text-xs mu">Coordinate meta (lat, lon)</div><${Pos} p=${d.pts[d.pts.length-1]} set=${(la,lo)=>setPos(i,d.pts.length-1,la,lo)} on=${isP(i,d.pts.length-1)} pin=${()=>pinF(i,d.pts.length-1)}/></div>
+<div className="grid grid-cols-3 gap-2 text-xs mu">${[['km','Distanza km'],['dp','D+ (m)'],['dm','D− (m)']].map(([k,l])=>h`<label key=${k}>${l}<input type="number" min="0" step=${k==='km'?'0.1':'10'} value=${d[k]} onChange=${e=>eDay(i,{[k]:e.target.value})}/></label>`)}</div>
+<div><div className="text-xs mu mb-1">Difficoltà CAI</div><div className="flex gap-1.5">${Object.keys(CAI).map(c=>h`<button key=${c} className=${'ch flex-1 '+(d.cai===c?'on':'')} onClick=${()=>eDay(i,{cai:c})}>${c}</button>`)}</div></div>
+<div><div className="text-xs mu mb-1">Pernottamento</div><div className="grid grid-cols-4 gap-1.5">${[[null,'Nessuno'],['r','Rifugio'],['b','Bivacco'],['t','Tenda']].map(([k,l])=>h`<button key=${l} className=${'ch !px-1 '+(d.sleep===k?'on':'')} onClick=${()=>setSl(i,k)}>${l}</button>`)}</div>${d.sleep&&h`<input className="mt-2" aria-label="Nome struttura" placeholder="Nome struttura / luogo" value=${d.sn} onChange=${e=>eDay(i,{sn:e.target.value})}/>`}</div>
+<div><div className="text-xs mu mb-1.5">Waypoint sulla mappa</div>
+${d.pts.map((p,j)=>j>0&&j<d.pts.length-1&&p.n!=null&&h`<div key=${j} className="mb-2"><div className="flex items-center gap-1.5 mb-1.5"><span className="w-2.5 h-2.5 rounded-full shrink-0" style=${{background:TC[p.t]||'#94a3b8'}}></span><input aria-label="Nome waypoint" value=${p.n} onChange=${e=>renWp(i,j,e.target.value)}/><select aria-label="Tipo waypoint" className="!w-32 shrink-0" value=${p.t||'p'} onChange=${e=>typWp(i,j,e.target.value)}>${Object.keys(WL).map(k=>h`<option key=${k} value=${k}>${WL[k]}</option>`)}</select><button aria-label="Elimina waypoint" className="grid place-items-center w-9 h-9 shrink-0 rounded-xl border border-slate-700 bg-slate-800" onClick=${()=>delWp(i,j)}><${Ic} n="Trash2" s=${14}/></button></div><${Pos} p=${p} set=${(la,lo)=>setPos(i,j,la,lo)} on=${isP(i,j)} pin=${()=>pinF(i,j)} cls="pl-4"/></div>`)}
+<div className="flex flex-wrap gap-1.5 mt-2">${Object.keys(WL).map(k=>h`<button key=${k} className="pill !py-1.5" onClick=${()=>addWp(i,k)}>+ ${WL[k]}</button>`)}</div></div></div>`)}
+${ed.d.days.length<7&&h`<button className="pill w-full justify-center" onClick=${addDay}><${Ic} n="Plus" s=${15}/> Aggiungi giorno</button>`}</div>
+<div className="flex gap-2 p-3 border-t border-slate-800 bg-slate-900/95 backdrop-blur-md" style=${{paddingBottom:'calc(12px + env(safe-area-inset-bottom,0px))'}}><button className="pill flex-1 justify-center" onClick=${()=>setEd(null)}>Annulla</button><button className="pill pon flex-[2] justify-center" onClick=${saveEd}><${Ic} n="Check" s=${15}/> Salva itinerario</button></div></div></div>`;
+
+const modal=cm&&h`<div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end lg:items-center justify-center" onClick=${()=>setCm(false)}><div role="dialog" aria-label="Impostazioni Cloud" className="cd w-full max-w-md max-h-[88vh] overflow-auto space-y-3 !rounded-b-none !rounded-t-3xl lg:!rounded-3xl" style=${{paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}} onClick=${e=>e.stopPropagation()}>
+<div className="flex items-center"><b className="flex-1 flex items-center gap-1.5"><${Ic} n="Cloud" s=${18}/> Impostazioni Cloud & Archiviazione</b><button aria-label="Chiudi" className="p-1.5 rounded-lg bd bg-slate-800" onClick=${()=>setCm(false)}><${Ic} n="X" s=${16}/></button></div>
+<label className="text-xs mu block">SUPABASE_URL<input placeholder="https://xxxx.supabase.co" autoCapitalize="off" value=${dr.url||''} onChange=${e=>setDr({...dr,url:e.target.value})}/></label>
+<label className="text-xs mu block">SUPABASE_ANON_KEY<input type="password" placeholder="eyJ…" autoCapitalize="off" value=${dr.key||''} onChange=${e=>setDr({...dr,key:e.target.value})}/></label>
+<div className="grid grid-cols-2 gap-2"><${Btn} c="bg-emerald-500 text-slate-950" onClick=${()=>{ls.set(dr);setCfg({...dr});setCs(null);setMsg('Chiavi salvate su questo dispositivo.')}}>Salva e connetti<//><${Btn} c="bd bg-slate-800" onClick=${()=>{ls.set({});setDr({});setCfg({});setCs(null);setIts(its.filter(x=>!x.cloudId));setCi(0)}}>Scollega<//></div>
+${cs&&h`<div role="status" className=${'text-sm rounded-lg px-2.5 py-1.5 text-white '+(cs.ok?'bg-emerald-700':'bg-red-600')}>${cs.t}</div>`}
+${!sb&&h`<p className="text-xs mu">I tuoi itinerari sono già salvati automaticamente in locale su questo browser.</p>`}
+<div className="font-bold text-sm pt-1">Gestione Itinerari</div>
+${its.map((x,i)=>h`<div key=${i} className="flex items-center gap-2 text-sm bd rounded-xl p-2.5 bg-slate-900/60"><button className="flex-1 text-left" onClick=${()=>{pickIt(i);setCm(false)}}><b>${x.name}</b><div className="text-xs mu">${x.cloudId?'☁ cloud':'salvato in locale'} · ${x.days.length} giorni</div></button><button className=${'ch '+(dc===i?'on':'')} onClick=${()=>delIt(i)}>${dc===i?'Conferma':'Elimina'}</button></div>`)}
+<div className="pt-2 border-t border-slate-700/60 flex justify-between items-center text-xs mu"><span>Ripristina percorsi demo predefiniti</span><button className="pill !py-1 !text-xs" onClick=${()=>{setIts(PRE);setCi(0);setMsg('Itinerari predefiniti ripristinati.')}}>Ripristina</button></div></div></div>`;
+
+const Btn=({c='',...r})=>h`<button className=${'rounded-xl px-3 py-2 text-sm font-bold flex items-center justify-center gap-1.5 transition '+c} ...${r}/>`;
+
+return h`<div className="max-w-md lg:max-w-7xl lg:px-6 mx-auto min-h-screen relative flex flex-col bg-slate-900">
+<header className="sticky z-20 px-4 lg:px-0 pt-3 pb-3 bg-slate-900/95 backdrop-blur-md border-b border-slate-800" style=${{top:'env(safe-area-inset-top,0px)'}}>
+<div className="flex items-center gap-2.5"><span className="grid place-items-center w-8 h-8 rounded-xl bg-emerald-500 text-slate-950"><${Ic} n="Mountain" s=${18}/></span><b className="text-lg font-extrabold tracking-tight">Quota<span className="text-emerald-400">Zero</span></b><div className="hidden lg:flex items-center gap-1 ml-8">${[['Map','Pianifica & Mappa'],['Tent','Tappe & Bivacchi'],['Backpack','Zaino & Sicurezza']].map(([n,l],i)=>h`<button key=${i} onClick=${()=>go(i)} aria-current=${tab===i} className=${'flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition '+(tab===i?'bg-slate-800 text-emerald-400 border border-slate-700':'text-slate-400 hover:text-slate-100')}><${Ic} n=${n} s=${17}/>${l}</button>`)}</div><span className="ml-auto"></span><button className="pill !py-1.5" onClick=${()=>openEd('new')}><${Ic} n="Plus" s=${14}/> Nuovo</button><button aria-label="Impostazioni Cloud" className=${'grid place-items-center w-9 h-9 rounded-xl border border-slate-700 bg-slate-800 '+(sb?'text-emerald-400':'text-slate-300')} onClick=${()=>setCm(true)}><${Ic} n=${sb?'Cloud':'CloudOff'} s=${18}/></button></div>
+<div className="relative mt-3 lg:hidden"><div className="w-full rounded-2xl bg-slate-950 border border-slate-800 pl-3.5 pr-2 py-2.5 flex items-center gap-1.5"><button aria-label="Scegli itinerario" aria-expanded=${pk} className="flex-1 min-w-0 text-left flex items-center gap-2" onClick=${()=>setPk(!pk)}><div className="flex-1 min-w-0"><div className="font-bold truncate">${it.name}</div><div className="text-xs text-slate-400 truncate">${it.zone}</div><div className="flex flex-wrap gap-1.5 mt-2">${[['Route',tot.km.toFixed(1)+' km'],['TrendingUp','D+ '+tot.dp+' m'],['Clock',fh(tot.t)]].map(([n,t])=>h`<span key=${n} className="inline-flex items-center gap-1 rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-200"><${Ic} n=${n} s=${11}/>${t}</span>`)}</div></div><${Ic} n="ChevronDown" s=${18} c=${'text-slate-400 transition '+(pk?'rotate-180':'')}/></button><button aria-label="Modifica itinerario" title="Modifica" className="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-slate-800 border border-slate-700 text-slate-200" onClick=${()=>openEd('edit')}><${Ic} n="Pencil" s=${16}/></button></div>
+${pk&&h`<div className="absolute z-30 left-0 right-0 mt-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">${its.map((x,i)=>h`<button key=${i} className=${'w-full text-left px-3.5 py-2.5 border-b border-slate-800 last:border-0 '+(i===ci?'bg-slate-800':'')} onClick=${()=>{pickIt(i);setPk(false)}}><div className="font-semibold text-sm">${x.name}</div><div className="text-xs text-slate-400">${x.zone}${x.cloudId?' · ☁':''}</div></button>`)}<button className="w-full text-left px-3.5 py-3 text-sm font-bold text-emerald-400 flex items-center gap-2 bg-slate-950/60" onClick=${()=>{setPk(false);openEd('new')}}><${Ic} n="Plus" s=${16}/> Nuovo itinerario</button></div>`}</div>
+</header>
+${msg&&h`<div role="status" className="mx-4 lg:mx-0 mt-3 rounded-xl bg-slate-800 border border-emerald-500/50 text-slate-100 text-sm font-medium px-3.5 py-2.5">${msg}</div>`}
+<main className="flex-1 p-4 pb-24 lg:px-0 lg:pb-10 grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 items-start">
+<div className="lg:col-span-7 min-w-0"><div id="sec0" className=${(tab===0?'block':'hidden')+' lg:block space-y-3 scroll-mt-20'}>${planner}${descCard}
+<div className="flex gap-2 flex-wrap"><button className=${'ch '+(sel<0?'on':'')} onClick=${()=>setSel(-1)}>Tutto</button>${ds.map((d,i)=>h`<button key=${i} className=${'ch '+(sel===i?'on':'')} onClick=${()=>setSel(i)}><span style=${{color:sel===i?'#0f172a':DC[i%5]}}>●</span> G${i+1}</button>`)}</div>
+<div className="cd !p-0 overflow-hidden"><${MapBox} it=${it} sel=${sel} wp=${wp} setWp=${setWp} fk=${ci}/>
+<div className="flex flex-wrap gap-x-3 gap-y-1 text-xs mu mt-2.5 px-3.5">${[['r','Rifugio'],['b','Bivacco'],['t','Tenda'],['w','Acqua'],['p','Passo/vetta'],['e','Emergenza/SOS']].map(([k,l])=>h`<span key=${k}><span style=${{color:TC[k]}}>●</span> ${l}</span>`)}</div>
+<p className="text-[11px] mu mt-1 px-3.5 pb-3">Trascina per spostare, usa la rotellina o + / − per lo zoom. Se le tile online non si caricano, passo in automatico alla vista offline.</p></div>
+<div className="cd text-sm">${wpd?h`<b>${wpd.n}</b> · ${wpd.ele} m · Giorno ${wp.d+1}${wpd.t&&SL[wpd.t]?' · '+SL[wpd.t]:''}<div className="mu text-xs mt-1">${wpd.lat.toFixed(4)}°N, ${wpd.lon.toFixed(4)}°E</div>`:h`<span className="mu">Tocca un waypoint sulla mappa per i dettagli.</span>`}</div>
+<div className="rounded-2xl bg-slate-950 border border-slate-800 p-2.5 space-y-2"><div className="flex gap-1.5 overflow-x-auto"><label className="pill cursor-pointer"><${Ic} n="Upload" s=${15}/> Importa GPX<input type="file" accept=".gpx,application/gpx+xml,text/xml" className="hidden" onChange=${onFile}/></label>
+<button className="pill" onClick=${()=>save(slug+'.gpx',gpx(it),'application/gpx+xml')}><${Ic} n="Download" s=${15}/> Esporta GPX</button>
+<button className="pill" title="Salva nel cloud" onClick=${toCloud} disabled=${busy}><${Ic} n="Cloud" s=${15}/> ${busy?'…':it.cloudId?'Aggiorna':'Salva nel cloud'}</button></div>
+<div className="flex items-center gap-1.5 overflow-x-auto"><span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pl-1 pr-0.5"><${Ic} n="Clock" s=${12}/> Tempi</span>${[['cai','CAI'],['munter','Munter']].map(([k,l])=>h`<button key=${k} className=${'pill '+(method===k?'pon':'')} onClick=${()=>setMethod(k)}>${l}</button>`)}${method==='munter'&&[3,4,5,6].map(v=>h`<button key=${v} className=${'pill '+(speed===v?'pon':'')} onClick=${()=>setSpeed(v)}>${v} km/h</button>`)}</div></div>
+<div className="cd"><div className="font-bold mb-1 flex items-center gap-1.5"><${Ic} n="Route" s=${16}/> Profilo altimetrico</div><${Prof} it=${it}/>
+<div className="grid grid-cols-3 text-center text-sm mt-2"><div><b>${tot.dp} m</b><div className="mu text-xs">D+</div></div><div><b>${tot.dm} m</b><div className="mu text-xs">D−</div></div><div><b>${fh(tot.t)}</b><div className="mu text-xs">marcia</div></div></div></div></div></div><div className="lg:col-span-5 min-w-0 lg:space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">${deskPicker}
+<div id="sec1" className=${(tab===1?'block':'hidden')+' lg:block space-y-3 scroll-mt-20'}>
+<div className="cd space-y-2"><div className="font-bold flex items-center gap-1.5"><${Ic} n="Clock" s=${16}/> Metodo di calcolo dei tempi</div>
+<div className="grid grid-cols-2 gap-1.5">${[['cai','CAI'],['munter','Munter']].map(([k,l])=>h`<button key=${k} className=${'ch '+(method===k?'on':'')} onClick=${()=>setMethod(k)}>${l}</button>`)}</div>
+${method==='munter'?h`<div><div className="text-xs mu mb-1">Velocità di marcia (km-sforzo ÷ km/h)</div><div className="grid grid-cols-4 gap-1.5">${[[3,'Difficile'],[4,'Sentiero'],[5,'Veloce'],[6,'Trail']].map(([v,l])=>h`<button key=${v} className=${'ch leading-tight '+(speed===v?'on':'')} onClick=${()=>setSpeed(v)}>${v} km/h<div className="text-[10px] font-normal">${l}</div></button>`)}</div><p className="text-xs mu mt-1">km-sforzo = km + D+/100. Usa 3 km/h con neve, terreno difficile o zaino pesante.</p></div>`:h`<p className="text-xs mu">Orizzontale: 3,5 km/h (T/E), 2,5–3 km/h (EE/EEA). Verticale: +300/350 m/h in salita, −400/500 m/h in discesa. Tempo = valore maggiore + metà del minore. Il tempo mostrato è il valore centrale, con intervallo veloce–prudente.</p>`}</div>
+${ds.map((d,i)=>h`<div key=${i} className="cd space-y-2" style=${{borderLeft:'6px solid '+DC[i%5]}}>
+<div className="flex items-start gap-2"><div className="flex-1"><b>Giorno ${i+1}</b><div className="text-sm mu">${nm(d,i)}</div></div><${TimeBox} d=${d}/>
+${ds.length>1&&h`<button aria-label="Elimina giorno" className="p-1.5 rounded-lg bd bg-slate-800" onClick=${()=>setDays(a=>a.filter((_,j)=>j!==i))}><${Ic} n="Trash2" s=${15}/></button>`}</div>
+<${Info} d=${d}/>
+<div className="grid grid-cols-3 gap-2 text-xs mu">${[['km','Distanza km'],['dp','D+ (m)'],['dm','D− (m)']].map(([k,l])=>h`<label key=${k}>${l}<input type="number" min="0" step=${k==='km'?'0.1':'10'} value=${d[k]} onChange=${e=>upd(i,{[k]:+e.target.value})}/></label>`)}</div>
+<div><div className="text-xs mu mb-1">Difficoltà CAI · ${CAI[d.cai]}</div><div className="flex gap-1.5">${Object.keys(CAI).map(c=>h`<button key=${c} className=${'ch flex-1 '+(d.cai===c?'on':'')} onClick=${()=>upd(i,{cai:c})}>${c}</button>`)}</div></div>
+<div><div className="text-xs mu mb-1 flex items-center gap-1"><${Ic} n="Droplets" s=${13}/> Punti acqua</div><div className="flex flex-wrap gap-1.5">${d.water.map((w,j)=>h`<button key=${j} className="ch text-xs" onClick=${()=>upd(i,{water:d.water.filter((_,a)=>a!==j)})}>${w} ×</button>`)}<button className="ch text-xs" onClick=${()=>upd(i,{water:[...d.water,'Sorgente']})}>+ aggiungi</button></div></div>
+<div><div className="text-xs mu mb-1">Pernottamento</div><div className="grid grid-cols-2 gap-1.5">${[[null,'Nessuno (rientro)'],['r','Rifugio custodito'],['b','Bivacco fisso'],['t','Tenda / libero']].map(([k,l])=>h`<button key=${l} className=${'ch '+(d.sleep===k?'on':'')} onClick=${()=>upd(i,{sleep:k})}>${l}</button>`)}</div>
+${d.sleep&&h`<input className="mt-2" aria-label="Nome struttura" placeholder="Nome struttura / luogo" value=${d.sn} onChange=${e=>upd(i,{sn:e.target.value})}/>`}
+${d.sleep==='b'&&h`<p className="text-xs mu mt-1">Non gestito: nessuna garanzia di posti, coperte o acqua. Porta sacco a pelo e un’alternativa.</p>`}
+${d.sleep==='t'&&h`<p className="text-xs mu mt-1">Verifica i divieti di bivacco e campeggio libero dell’area (parchi, quote, regolamenti locali).</p>`}</div></div>`)}
+${ds.length<5&&h`<${Btn} c="bg-emerald-500 hover:bg-emerald-400 text-slate-950 w-full" onClick=${()=>setDays(a=>[...a.map((d,i)=>i===a.length-1&&!d.sleep?{...d,sleep:'r'}:d),{km:10,dp:600,dm:600,cai:'E',sleep:null,sn:'',water:[],esc:['Definisci la via di fuga per questa tappa.'],pts:[]}])}><${Ic} n="Plus" s=${16}/> Aggiungi giorno<//>`}</div>
+<div id="sec2" className=${(tab===2?'block':'hidden')+' lg:block space-y-3 scroll-mt-20'}>
+<div className="cd"><div className="font-bold mb-1 flex justify-between"><span><${Ic} n="Backpack" s=${16} c="inline mr-1"/>Checklist zaino</span><span className="mu text-sm">${[...base,...extras].filter(x=>ck[x]).length}/${base.length+extras.length}</span></div>
+${extras.length>0&&h`<div className="text-xs font-bold text-emerald-400 mt-2">AGGIUNTI AUTOMATICAMENTE · ${ds.length>1?ds.length+' giorni':''}</div>`}
+${extras.map(x=>h`<label key=${x} className="flex items-center gap-2 py-1.5 text-sm cursor-pointer"><input type="checkbox" className="!w-5 !h-5" checked=${!!ck[x]} onChange=${()=>setCk({...ck,[x]:!ck[x]})}/>${x}</label>`)}
+<div className="text-xs font-bold mu mt-2">BASE</div>
+${base.map(x=>h`<label key=${x} className="flex items-center gap-2 py-1.5 text-sm cursor-pointer"><input type="checkbox" className="!w-5 !h-5" checked=${!!ck[x]} onChange=${()=>setCk({...ck,[x]:!ck[x]})}/>${x}</label>`)}</div>
+<div className="cd"><div className="font-bold mb-2 flex items-center gap-1.5"><${Ic} n="ShieldAlert" s=${16}/> Scheda sicurezza e piano B</div>
+<label className="text-xs mu">Data di partenza<input type="date" value=${dt} onChange=${e=>e.target.value&&setDt(e.target.value)}/></label></div>
+${ds.map((d,i)=>{const x=wx(d);return h`<div key=${i} className="cd text-sm space-y-1.5" style=${{borderLeft:'6px solid '+DC[i%5]}}><b>Giorno ${i+1}</b> <span className="mu">· quota max ${x.mxE} m</span>
+<div className="flex gap-4"><span className="flex items-center gap-1"><${Ic} n="Sunrise" s=${15}/> ${x.sr}</span><span className="flex items-center gap-1"><${Ic} n="Sunset" s=${15}/> ${x.ss}</span></div>
+<div className="mu">Temperatura stimata: ${(d.pts[0]?d.pts[0].ele:0)} m → <b>${x.t(d.pts[0]?d.pts[0].ele:0)} °C</b> · ${x.mxE} m → <b>${x.t(x.mxE)} °C</b>${x.iso?' · isoterma 0 °C a ~'+x.iso+' m':''}</div>
+<div><b>Vie di fuga</b><ul className="list-disc pl-5 mu">${d.esc.map((v,j)=>h`<li key=${j}>${v}</li>`)}</ul></div></div>`})}
+<p className="text-xs mu">Orari di alba e tramonto calcolati per la data scelta. Il meteo per quota è una stima da gradiente termico (−6,5 °C/km), non una previsione: consulta il bollettino ufficiale prima di partire. Itinerari e coordinate sono dimostrativi.</p>
+<${Btn} c="bg-emerald-500 hover:bg-emerald-400 text-slate-950 w-full" onClick=${()=>save('scheda-sicurezza-'+slug+'.html',sheet(),'text/html')}><${Ic} n="FileText" s=${16}/> Esporta scheda da lasciare a casa<//></div></div>
+</main>
+<nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md grid grid-cols-3 z-20 backdrop-blur-md bg-slate-900/95 border-t border-slate-800 lg:hidden" style=${{paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+${[['Map','Pianifica & Mappa'],['Tent','Tappe & Bivacchi'],['Backpack','Zaino & Sicurezza']].map(([n,l],i)=>h`<button key=${i} onClick=${()=>setTab(i)} aria-current=${tab===i} className=${'relative flex flex-col items-center gap-1 pt-3 pb-2 text-[11px] font-semibold '+(tab===i?'text-emerald-400':'text-slate-400')}>${tab===i&&h`<span className="absolute top-0 h-0.5 w-10 rounded-full bg-emerald-400"></span>`}<${Ic} n=${n} s=${22}/>${l}</button>`)}</nav>${modal}${editor}</div>`}
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script></body></html>
